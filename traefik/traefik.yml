@@ -1,0 +1,21 @@
+api:
+  insecure: true
+
+providers:
+  docker: {}
+
+entryPoints:
+  web:
+    address: ":80"
+
+  websecure:
+    address: ":443"
+
+certificatesResolvers:
+  letsEncrypt:
+    acme:
+      email: me@izu.re
+      storage: /etc/traefik/acme/acme.json
+      dnsChallenge:
+        # used during the challenge
+        provider: cloudflare

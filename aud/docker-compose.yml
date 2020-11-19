@@ -1,0 +1,19 @@
+version: '2'
+
+services:
+    bitwarden:
+        image: docker.pkg.github.com/koplas/aud_server/aud-server:main
+        container_name: aud
+        networks:
+            - traefik
+        labels:
+            - "traefik.http.routers.aud.rule=Host(`aud.izu.re`)"
+            - "traefik.docker.network=traefik_default"
+            - "traefik.http.routers.aud.tls=true"
+            - "traefik.http.routers.aud.tls.certresolver=letsEncrypt"
+        volumes:
+            - /data/aud/myNotebooks:/root/AuD/jupyter/myNotebooks
+networks:
+    traefik:
+        external:
+            name: traefik_gateway

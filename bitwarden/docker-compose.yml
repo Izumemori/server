@@ -1,0 +1,19 @@
+version: '2'
+
+services:
+    bitwarden:
+        image: bitwardenrs/server:latest
+        networks:
+            - traefik
+        labels:
+            - "traefik.http.routers.bitwarden.rule=Host(`bw.izu.re`)"
+            - "traefik.docker.network=traefik_default"
+            - "traefik.http.routers.bitwarden.tls=true"
+            - "traefik.http.routers.bitwarden.tls.certresolver=letsEncrypt"
+        volumes:
+            - /data/bitwarden:/data/
+        env_file: .env
+networks:
+    traefik:
+        external:
+            name: traefik_gateway

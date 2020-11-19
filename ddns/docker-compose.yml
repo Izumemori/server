@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+    cloudflare-ddns-v6:
+        image: oznu/cloudflare-ddns
+        container_name: ddns-v6
+        restart: always
+        labels:
+            - "traefik.enable=false"
+        environment:
+            - RRTYPE=AAAA
+        env_file: .env
+        network_mode: host
+    cloudflare-ddns-v4:
+        image: oznu/cloudflare-ddns
+        container_name: ddns-v4
+        restart: always
+        labels:
+            - "traefik.enable=false"
+        environment:
+            - RRTYPE=A
+        env_file: .env
+        network_mode: host
