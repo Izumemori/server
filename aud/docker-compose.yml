@@ -14,6 +14,8 @@ services:
             traefik.http.routers.aud.tls.certresolver: letsEncrypt
             traefik.http.routers.aud.entrypoints: websecure
 
+        mem_limit: 2G
+
         volumes:
             - /data/aud/myNotebooks:/root/AuD/jupyter/myNotebooks
 networks:
