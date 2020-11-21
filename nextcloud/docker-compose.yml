@@ -1,0 +1,74 @@
+version: '2'
+
+services:
+  db:
+    image: postgres
+    container_name: nextcloud.db
+    labels:
+      traefik.enable: false
+    networks:
+      - nextcloud
+    restart: always
+    volumes:
+      - /data/nextcloud/data:/var/lib/postgresql/data
+    env_file: .env
+
+  app:
+    build:
+      context: .
+    container_name: nextcloud.app
+    labels:
+      traefik.enable: false
+    networks:
+      - nextcloud
+    links:
+      - db
+    volumes:
+      - /data/nextcloud/html:/var/www/html
+    env_file: .env
+    restart: always
+
+  web:
+    image: nginx
+    container_name: nextcloud.web
+    networks:
+        - traefik
+        - nextcloud
+    labels:
+        traefik.http.routers.nextcloud.rule: Host(`nc.izu.re`)
+        traefik.http.routers.nextcloud.entrypoints: websecure
+        traefik.http.routers.nextcloud.tls: true
+        traefik.docker.network: traefik_gateway
+        traefik.http.routers.nextcloud.tls.certresolver: letsEncrypt
+        traefik.http.routers.nextcloud.middlewares: "nextcloud-dav,secure-headers@file"
+        traefik.http.middlewares.nextcloud-dav.replacepathregex.regex: ^/.well-known/ca(l|rd)dav
+        traefik.http.middlewares.nextcloud-dav.replacepathregex.replacement: /remote.php/dav/
+
+    links:
+      - app
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    volumes_from:
+      - app
+    restart: always
+
+  cron:
+    image: nextcloud
+    container_name: nextcloud.cron
+    labels:
+      traefik.enable: false
+    restart: always
+    volumes_from:
+      - app
+    networks:
+      - nextcloud
+    entrypoint: /cron.sh
+    labels:
+      traefik.enable: false
+
+networks:
+    traefik:
+        external:
+            name: traefik_gateway
+    nextcloud:
+        driver: bridge
