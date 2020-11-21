@@ -1,0 +1,3 @@
+[submodule "aud/aud_server"]
+	path = aud/aud_server
+	url = git@github.com:Izumemori/aud_server.git

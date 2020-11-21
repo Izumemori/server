@@ -7,12 +7,15 @@ services:
         networks:
             - traefik
         labels:
-            - traefik.http.routers.bitwarden.rule=Host(`bw.izu.re`)
-            - traefik.http.routers.bitwarden.tls=true
-            - traefik.http.routers.bitwarden.tls.certresolver=letsEncrypt
+            traefik.http.routers.bitwarden.rule: Host(`bw.izu.re`)
+            traefik.http.routers.bitwarden.entrypoints: websecure
+            traefik.http.routers.bitwarden.tls: true
+            traefik.http.routers.bitwarden.tls.certresolver: letsEncrypt
+
         volumes:
             - /data/bitwarden:/data/
         env_file: .env
+
 networks:
     traefik:
         external:

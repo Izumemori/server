@@ -6,7 +6,7 @@ services:
         container_name: ddns-v6
         restart: always
         labels:
-            - "traefik.enable=false"
+            traefik.enable: false
         environment:
             - RRTYPE=AAAA
         env_file: .env
@@ -16,7 +16,7 @@ services:
         container_name: ddns-v4
         restart: always
         labels:
-            - "traefik.enable=false"
+            traefik.enable: false
         environment:
             - RRTYPE=A
         env_file: .env
