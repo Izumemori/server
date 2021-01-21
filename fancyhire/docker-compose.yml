@@ -1,0 +1,39 @@
+version: '2'
+
+services:
+    fancyhire.server:
+        image: docker.pkg.github.com/fancyhire/server/fancyhire.server:latest
+        container_name: fancyhire.server
+        networks:
+            - traefik
+            - fancyhire.network
+        labels:
+            traefik.http.routers.fancyhire-server.rule: Host(`fancy-hire-test.izu.re`)
+            traefik.http.routers.fancyhire-server.entrypoints: websecure
+            traefik.http.routers.fancyhire-server.tls: true
+            traefik.http.routers.fancyhire-server.tls.certresolver: letsEncrypt
+            traefik.docker.network: traefik_gateway
+        environment:
+            - ASPNETCORE_URLS=http://+  
+        env_file: .env
+    fancyhire.customerbot:
+        image: docker.pkg.github.com/fancyhire/customerbot/fancyhire.customerbot:latest
+        env_file: .env
+        networks:
+            - fancyhire.network
+        container_name: fancyhire.customerbot
+    fancyhire.db:
+        image: mariadb
+        container_name: fancyhire.db
+        restart: always
+        env_file: .env
+        networks:
+            - fancyhire.network
+        volumes:
+            - /data/fancyhire/data:/var/lib/mysql
+networks:
+    fancyhire.network:
+        driver: bridge
+    traefik:
+        external:
+            name: traefik_gateway
