@@ -1,0 +1,13 @@
+version: '2'
+
+services:
+    valheim.server:
+        image: lloesche/valheim-server
+        container_name: valheim.server
+        mem_limit: 3G
+        ports:
+          - 2456-2458:2456-2458/udp
+        volumes:
+          - /data/valheim/config:/config
+          - /data/valheim/data:/opt/valheim
+        env_file: .env
