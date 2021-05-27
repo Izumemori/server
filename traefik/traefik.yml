@@ -5,7 +5,8 @@ providers:
   docker: {}
   file:
     filename: /dynamic.yml
-  
+    watch: true
+
 entryPoints:
   web:
     address: ":80"
@@ -17,6 +18,9 @@ entryPoints:
 
   websecure:
     address: ":443"
+
+  minecraft:
+    address: ":25565/tcp"
 
 certificatesResolvers:
   letsEncrypt:

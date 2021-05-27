@@ -1,0 +1,85 @@
+version: "2.3"
+services:
+  database:
+    container_name: pterodactyl.db
+    image: mariadb
+    restart: always
+    env_file: .env
+    labels:
+      traefik.enable: false
+    volumes:
+      - /data/pterodactyl/db:/var/lib/mysql
+    networks:
+      - pterodactyl
+  cache:
+    container_name: pterodactyl.cache
+    image: redis
+    restart: always
+    labels:
+      traefik.enable: false
+    networks:
+      - pterodactyl
+  panel:
+    container_name: pterodactyl.web
+    image: ccarney16/pterodactyl-panel
+    restart: always
+    depends_on:
+      - database
+      - cache
+    labels:
+      traefik.http.routers.pterodactyl.rule: Host(`panel.izu.re`)
+      traefik.http.routers.pterodactyl.entrypoints: websecure
+      traefik.http.routers.pterodactyl.tls: true
+      traefik.docker.network: traefik_gateway
+      traefik.http.routers.pterodactyl.middlewares: https-redirect
+      traefik.http.routers.pterodactyl.tls.certresolver: letsEncrypt
+      traefik.http.middlewares.https-redirect.headers.sslproxyheaders.X-Forwarded-Proto: https
+      traefik.http.middlewares.https-redirect.headers.sslredirect: true
+    networks:
+      - traefik
+      - pterodactyl
+    volumes:
+        - /data/pterodactyl/data:/data
+    env_file: .env
+  worker:
+    container_name: pterodactyl.worker
+    command: wait-for -t 5 panel:80 -- php /var/www/html/artisan queue:work --queue=high,standard,low --sleep=3 --tries=3
+    depends_on:
+      panel:
+        condition: service_started
+    env_file: .env
+    image: ccarney16/pterodactyl-panel:latest
+    labels:
+      ofelia.enabled: "true"
+      ofelia.job-exec.pqueue.schedule: "@every 1m"
+      ofelia.job-exec.pqueue.command: "php /var/www/html/artisan schedule:run"
+      ofelia.job-exec.pqueue.user: "nginx"
+      traefik.enable: false
+    restart: always
+    volumes_from:
+      - panel
+    networks:
+      - pterodactyl
+  cron:
+    container_name: pterodactyl.cron
+    command: daemon --docker
+    depends_on:
+      panel:
+        condition: service_started
+      worker:
+        condition: service_started
+    image: mcuadros/ofelia:latest
+    network_mode: none
+    privileged: true
+    restart: always
+    labels:
+      traefik.enable: false
+    volumes:
+      - ${DOCKER_SOCKET:-/var/run/docker.sock}:${DOCKER_SOCKET:-/var/run/docker.sock}
+
+networks: 
+  traefik:
+    external:
+        name: traefik_gateway
+  pterodactyl:
+    driver: bridge

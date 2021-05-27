@@ -1,0 +1,19 @@
+version: '3.4'
+
+services:
+  router:
+    image: itzg/mc-router
+    networks:
+        - traefik
+    command: --mapping=together-strong.mc.izu.re=potassium.local.izu.re:25565,krasstreffen.mc.izu.re=potassium.local.izu.re:25566,mc.izu.re=potassium.local.izu.re:25567
+    labels:
+        traefik.tcp.routers.minecraft.rule: HostSNI(`*`)
+        traefik.tcp.routers.minecraft.entrypoints: minecraft
+        traefik.docker.network: traefik_gateway
+        traefik.tcp.routers.minecraft.service: minecraft-service
+        traefik.tcp.services.minecraft-service.loadbalancer.server.port: 25565
+
+networks: 
+    traefik:
+        external:
+            name: traefik_gateway

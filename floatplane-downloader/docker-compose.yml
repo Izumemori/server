@@ -1,0 +1,20 @@
+version: '2'
+
+services:
+  floatplane-downloader:
+    image: inrix/floatplane-downloader
+    restart: always
+    labels:
+      traefik.enable: false
+    volumes:
+      - plex:/shares/plex
+      - /data/floatplane-downloader/config:/fp/config
+      - /data/floatplane-downloader/artwork:/fp/artwork
+      - /data/floatplane-downloader/db:/fp/db
+    env_file: .env
+    container_name: floatplane-downloader
+    network_mode: host
+
+volumes:
+    plex:
+        external: true
